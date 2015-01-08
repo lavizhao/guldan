@@ -49,6 +49,10 @@ class File_Control{
   std::string current_line(){
     return current;
   }
+
+  ~File_Control(){
+    file.close();
+  }
   
 };
 
