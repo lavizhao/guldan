@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../cmdline.h"
+#include "../util/cmdline.h"
 
 
 using namespace std;
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
   fuck.print();
 
   cout<<"得到iter"<<endl;
-  PARAM v = fuck.getParam("fuck");
+  PARAM v = fuck.getParam("dim");
   v.print();
   
   return 0;
