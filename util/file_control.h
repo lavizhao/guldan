@@ -1,5 +1,5 @@
-#ifndef STRING_UTIL_H_
-#define STRING_UTIL_H_
+#ifndef FILE_CONTROL_H_
+#define FILE_CONTROL_H_
 
 #include <iostream>
 #include <string>
@@ -7,8 +7,6 @@
 
 using std::cout;
 using std::endl;
-
-class Fuck{};
 
 class File_Control{
  private:
@@ -50,6 +48,7 @@ class File_Control{
     return current;
   }
 
+  //析构
   ~File_Control(){
     file.close();
   }

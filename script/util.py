@@ -19,6 +19,8 @@ def libsvm_format(x,y=None):
         x = x[1:]
         
     target = ""
+    if float(y) == -1.0:
+        y = '0.0'
     target += str(y)
 
     for indx,ele in enumerate(x):
