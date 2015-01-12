@@ -15,18 +15,19 @@ const double SMALL = 1e-3;
 class Sparse_Vector{
  private:
   std::map<long,double> vc;
+  std::map<long,double>::iterator iter;
   
  public:
- Sparse_Vector(std::vector< std::pair<long,double> >& content):vc(){
+ Sparse_Vector(std::vector< std::pair<long,double> >& content):vc(),iter(vc.begin()){
     for(long i=0;i<content.size();i++){
       vc.insert(content[i]);
     }
   }
   
- Sparse_Vector(void):vc(){
+ Sparse_Vector(void):vc(),iter(vc.begin()){
   }
 
- Sparse_Vector(const Sparse_Vector& sp):vc(sp.vc){
+ Sparse_Vector(const Sparse_Vector& sp):vc(sp.vc),iter(vc.begin()){
   }
 
   bool has_indx(long indx){
@@ -55,6 +56,8 @@ class Sparse_Vector{
   Sparse_Vector operator*(double num);
   Sparse_Vector operator*(Sparse_Vector& sp1);
 
+  double dot_sum(Sparse_Vector& sp1);
+
   //清除map中有0的元素
   void clear();
   
@@ -69,7 +72,24 @@ class Sparse_Vector{
     cout<<"============="<<endl;
   }
 
+  bool has_next(){
+    return !(iter == vc.end());
+  }
+
+  void restart(){
+    iter = vc.begin();
+  }
+
+  std::map<long,double>::iterator next();
+
 };
+
+
+std::map<long,double>::iterator Sparse_Vector::next(){
+  return iter++;
+}
+
+
 
 void Sparse_Vector::clear(){
   std::map<long,double>::iterator it = vc.begin();
@@ -206,7 +226,25 @@ Sparse_Vector Sparse_Vector::operator*(Sparse_Vector& sp1){
   return nsp;
 }
 
+double Sparse_Vector::dot_sum(Sparse_Vector& sp1){
+  double result = 0.0;
+    
+  //遍历加
+  std::map<long,double>::iterator it = sp1.vc.begin();
+  while(it!=sp1.vc.end()){
 
+    long indx = (*it).first;
+    double value = (*it).second;
+      
+    if(has_indx(indx)){
+      result += value*get_value(indx);
+    }
+      
+    it ++ ;
+  }
+
+  return result;
+}
 
 
 #endif

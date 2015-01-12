@@ -47,6 +47,12 @@ class File_Control{
   std::string current_line(){
     return current;
   }
+  
+  //返回开头
+  void restart(){
+    file.clear();
+    file.seekg(0);
+  }
 
   //析构
   ~File_Control(){

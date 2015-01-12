@@ -3,8 +3,10 @@
 #include <vector>
 #include <fstream>
 #include "../util/string_util.h"
+#include "../util/sparse_vector.h"
+#include "../util/amath.h"
 
-//using namespace std;
+using namespace std;
 
 using std::cout;
 using std::endl;
@@ -34,10 +36,19 @@ int main(int argc, char *argv[])
   
   file.close();
 
-  cout<<"==============测试file control============="<<endl;
+  cout<<"================================"<<endl;
+  Sparse_Vector x1;
+  Sparse_Vector x2;
 
-  std::string a = "121313";
-  long i = stol(a);
-  cout<<i<<endl;
+  x1.set_value(1,2);
+  x1.set_value(2,4);
+  
+  x2.set_value(3,5);
+  x2.set_value(2,3);
+
+  double fuck = x1.dot_sum(x2);
+  cout<<"fuck "<<fuck<<endl;
+
+  
   return 0;
 }
