@@ -67,8 +67,8 @@ def main():
     print("new train:%s new test:%s"%(len(train_pos)+len(train_neg), len(test_neg)+len(test_neg)))
 
     #然后是写
-    train_dir = "../data/ida/train.csv"
-    test_dir = "../data/ida/test.csv"
+    train_dir = "../data/ida/train1.csv"
+    test_dir = "../data/ida/test1.csv"
 
     t = open(train_dir,"w")
     writer = csv.writer(t)

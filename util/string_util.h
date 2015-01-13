@@ -6,30 +6,28 @@
 #include <sstream>
 #include <vector>
 #include <stdlib.h>
+#include <cstring>
 
 #include "sparse_vector.h"
 
 using std::cout;
 using std::endl;
 
-std::stringstream ss;
+std::vector<std::string> split(const std::string &s,const char delim) {
 
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-  //std::stringstream ss(s);
-  ss.str("");
-  ss.clear();
-  ss<<s;
-  std::string item;
-  while (std::getline(ss, item, delim)) {
-    elems.push_back(item);
-  }
-  return elems;
-}
+  std::vector<std::string> result;
 
-std::vector<std::string> split(const std::string &s, char delim) {
-  std::vector<std::string> elems;
-  split(s, delim, elems);
-  return elems;
+  const char* str = s.c_str();
+  do{
+    const char *begin = str;
+
+    while(*str != delim && *str)
+      str++;
+
+    result.push_back(std::string(begin, str));
+  } while (0 != *str++);
+
+  return result;
 }
 
 long stol(const std::string& s){
@@ -46,15 +44,16 @@ std::pair<int,Sparse_Vector> sparse_vector_form(const std::string& s){
   int label = stol(sp[0]);
 
   Sparse_Vector sv;
+  std::pair<int,Sparse_Vector> tp(label,sv);
 
   for(int i=1;i<sp.size();i++){
     std::vector<std::string> item = split(sp[i],':');
     long indx = stol(item[0].substr(1));
     double value = stod(item[1]);
-    sv.set_value(indx,value);
+    tp.second.set_value(indx,value);
   }
 
-  std::pair<int,Sparse_Vector> tp(label,sv);
+
   
   return tp;
 }

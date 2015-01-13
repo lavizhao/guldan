@@ -67,10 +67,15 @@ int main(int argc, char *argv[])
   int iter = cmd.get_param("iter").get_long();
 
   string train_dir = cmd.get_param("train").get_string();
+  string test_dir = cmd.get_param("test").get_string();
 
   logistic_regression lr(alpha,beta,L1,L2,iter);
 
   lr.fit(train_dir);
+
+  //double ans = lr.predict(train_dir);
+  double ans = lr.predict(test_dir);
+  cout<<"train ans "<<ans<<endl;
   
   return 0;
 }
