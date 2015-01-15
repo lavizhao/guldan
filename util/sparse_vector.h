@@ -6,10 +6,8 @@
 #include <vector>
 #include <tr1/unordered_map>
 
-using std::cout;
-using std::endl;
-
 const double SMALL = 1e-3;
+const double BIG = 1e-3;
 
 //typedef std::map<long,double> sp_type;
 //typedef std::map<long,double>::iterator sp_iter;
@@ -45,7 +43,12 @@ class Sparse_Vector{
   }
 
   double get_value(long indx){
-    return vc[indx];
+    sp_iter tit = vc.find(indx);
+    if(tit != vc.end()){
+      return tit->second;
+    }
+    else
+      return 0;
   }
 
   void set_value(long indx,double value){
@@ -72,7 +75,7 @@ class Sparse_Vector{
   double dot_sum(Sparse_Vector& sp1);
 
   //清除map中有0的元素
-  void clear();
+  void clear(double upper,double lower);
 
   void empty(){
     vc.clear();
@@ -80,13 +83,13 @@ class Sparse_Vector{
   
   void print_value(){
     sp_const_iter it = vc.begin();
-    cout<<"size "<<size()<<endl;
+    std::cout<<"size "<<size()<<std::endl;
     while(it!=vc.end()){
       std::pair<long,double> kv = (*it);
-      cout<<"indx "<<kv.first<<" value "<<kv.second<<endl;
+      std::cout<<"indx "<<kv.first<<" value "<<kv.second<<std::endl;
       it ++ ;
     }
-    cout<<"============="<<endl;
+    std::cout<<"============="<<std::endl;
   }
 
   bool has_next(){
@@ -108,11 +111,11 @@ sp_iter Sparse_Vector::next(){
 
 
 
-void Sparse_Vector::clear(){
+void Sparse_Vector::clear(double upper=SMALL,double lower=-SMALL){
   sp_iter it = vc.begin();
   while(it!=vc.end()){
     double value = it->second;
-    if(value>SMALL || value<-SMALL){
+    if(value>upper || value<-upper){
       it ++ ;
     }
     else{
@@ -161,7 +164,6 @@ Sparse_Vector Sparse_Vector::operator+(double num){
     it ++ ;
   }
 
-  //nsp.clear();
   return nsp;
 }
 
@@ -175,7 +177,6 @@ Sparse_Vector Sparse_Vector::operator-(double num){
     it ++ ;
   }
 
-  //nsp.clear();
   return nsp;
 }
 
@@ -189,7 +190,6 @@ Sparse_Vector Sparse_Vector::operator*(double num){
     it ++ ;
   }
 
-  //nsp.clear();
   return nsp;
 }
 
@@ -216,7 +216,6 @@ Sparse_Vector Sparse_Vector::operator+(Sparse_Vector& sp1){
     it ++ ;
   }
 
-  //nsp.clear();
   return nsp;
 }
 
@@ -243,7 +242,6 @@ Sparse_Vector Sparse_Vector::operator-(Sparse_Vector& sp1){
     it ++ ;
   }
 
-  //nsp.clear();
   return nsp;
 }
 
@@ -256,8 +254,8 @@ Sparse_Vector Sparse_Vector::operator*(Sparse_Vector& sp1){
   sp_iter it = sp1.vc.begin();
   while(it!=sp1.vc.end()){
 
-    long indx = (*it).first;
-    double value = (*it).second;
+    long indx = it->first;
+    double value = it->second;
       
     if(has_indx(indx)){
       std::pair<long,double> tp(indx,value*get_value(indx));
@@ -268,7 +266,6 @@ Sparse_Vector Sparse_Vector::operator*(Sparse_Vector& sp1){
   }
 
   Sparse_Vector nsp(mult);
-  //nsp.clear();
   
   return nsp;
 }
@@ -280,16 +277,17 @@ double Sparse_Vector::dot_sum(Sparse_Vector& sp1){
   sp_iter it = sp1.vc.begin();
   while(it!=sp1.vc.end()){
 
-    long indx = (*it).first;
-    double value = (*it).second;
+    long indx = it->first;
+    double value = it->second;
       
     if(has_indx(indx)){
-      result += value*get_value(indx);
+      double mvalue = get_value(indx);
+      double ans = value*mvalue;
+      result += ans;
     }
       
     it ++ ;
   }
-
   return result;
 }
 

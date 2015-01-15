@@ -37,6 +37,13 @@ float sqrt1( float number )  {
   y  = y * ( threehalfs - ( x2 * y * y ) );     
   y  = y * ( threehalfs - ( x2 * y * y ) );   
   return number*y;  
-}  
+}
+
+double logloss1(double z){
+  if (z >= 0)
+    return log(1+exp(-z));
+  else
+    return -z + log(1+exp(z));
+}
 
 #endif

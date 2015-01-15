@@ -28,3 +28,17 @@ def libsvm_format(x,y=None):
         
     return [target]
         
+def csv_format(x,y=None):
+    if y==None:
+        y = x[0]
+        x = x[1:]
+        
+    target = []
+    if float(y) == -1.0:
+        y = '0.0'
+    target.append(str(y))
+
+    for indx,ele in enumerate(x):
+        target.append(ele)
+        
+    return target
