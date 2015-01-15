@@ -1,10 +1,15 @@
 #ifndef SPARSE_VECTOR_H_
 #define SPARSE_VECTOR_H_
 
+#include "../util/random.h"
+
 #include <iostream>
 #include <map>
 #include <vector>
 #include <tr1/unordered_map>
+#include <tr1/unordered_set>
+
+
 
 const double SMALL = 1e-3;
 const double BIG = 1e-3;
@@ -102,7 +107,11 @@ class Sparse_Vector{
 
   sp_iter next();
 
+  void poisson_filter();
+  void bloom_filter(Sparse_Vector& bm,int ct);
+
 };
+
 
 
 sp_iter Sparse_Vector::next(){
@@ -123,6 +132,45 @@ void Sparse_Vector::clear(double upper=SMALL,double lower=-SMALL){
     }
   }
 }
+
+void Sparse_Vector::bloom_filter(Sparse_Vector& bm,int ct) {
+  sp_iter it = vc.begin();
+  
+  sp_iter bm_it;
+  while(it!=vc.end()){
+    long indx = it->first;
+    bm_it = bm.vc.find(indx);
+
+    if(bm_it != bm.vc.end()){
+      int tct = bm_it->second;
+      if(tct>ct){
+	it ++ ;
+      }else{
+	vc.erase(it++);
+      }
+      bm_it->second += 1;
+    }
+    else{
+      bm.vc[indx] = 1;
+    }
+    
+  }
+}
+
+void Sparse_Vector::poisson_filter() {
+  sp_iter it = vc.begin();
+  while(it!=vc.end()){
+    double value = it->second;
+    double ran = ran_uniform();
+    if(ran<0.03){
+      it ++ ;
+    }
+    else{
+      vc.erase(it++);
+    }
+  }
+}
+
 
 Sparse_Vector& Sparse_Vector::operator+=(Sparse_Vector& sp1){
   

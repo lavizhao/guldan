@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
   cout<<"------------------------------------------------"<<endl;
   cout<<"这是online logistic regression"<<endl;
-  cout<<"版本 1.0"<<endl;
+  cout<<"版本 1.1"<<endl;
   cout<<"作者:赵惜墨(Lavi Zhao)"<<endl;
   cout<<"作者邮箱:zhaoximo@hotmail.com"<<endl;
   cout<<"本软件遵从GPLv3.0 协议, 软件中应该包含GPLv3.0协议的license, 如果没有请自行下载"<<endl;

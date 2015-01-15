@@ -13,6 +13,7 @@
 #include "../util/string_util.h"
 #include "../util/file_control.h"
 #include "../util/amath.h"
+#include "../util/random.h"
 
 //FTRL的类
 
@@ -32,19 +33,24 @@ class logistic_regression{
   Sparse_Vector g;
   Sparse_Vector w;
 
+  Sparse_Vector bm;
+
   int iter;
   int verbose;
 
   long pos ;
   long neg ;
 
+  sp_iter it;
+  bool update;
+  long no_train;
+
  public:
 
   //构造函数
   logistic_regression(double alpha1,double beta1,double l1,double l2,	\
 		      int iter1,int vb):					\
-  alpha(alpha1),beta(beta1),L1(l1),L2(l2),z(),n(),sigma(),g(),w(),iter(iter1),verbose(vb){
-    
+  alpha(alpha1),beta(beta1),L1(l1),L2(l2),z(),n(),sigma(),g(),w(),iter(iter1),verbose(vb),bm(){
   }
 
   void print(){
@@ -54,20 +60,84 @@ class logistic_regression{
   void fit(std::string train_dir,double stop);
 
   void one_round(int label,Sparse_Vector& x);
-  void one_round1(int label,Sparse_Vector& x);
+
+  void update_w(Sparse_Vector& x);
+  
+  void update_other(Sparse_Vector& x,double p,int label);
 
   double predict(std::string test_dir,std::string out_dir);
 
 };
+
+void logistic_regression::update_w(Sparse_Vector& x){
+  //----------------------更新w---------------------------------
+  if (update==false){
+    update = true;
+    no_train ++ ;
+    return ;
+  }
+  
+  x.restart();
+  while(x.has_next()) {
+    it = x.next();
+    long indx = it->first;
+    //double xvalue = it->second;
+    double zvalue = z.get_value(indx);
+
+    if(abs(zvalue)<=L1){
+      w.set_value(indx,0);
+    }
+    else{
+      double a1 = -zvalue + sgn(zvalue)*L1;
+      double a2 = (beta+sqrt(n.get_value(indx)))/alpha + L2;
+
+      w.set_value(indx,a1/a2);
+    }
+  }
+
+}
+
+void logistic_regression::update_other(Sparse_Vector& x,double p,int label){
+  //-----------------------更新g,sigma,z,n----------------------------
+  g = x * (p-label);
+
+  //只有负的进行滤特征
+  //if(label == 0)
+  //g.poisson_filter();
+  //g.bloom_filter(bm,4);
+
+  g.restart();
+  while(g.has_next()){
+    it = g.next();
+    long indx = it->first;
+    double value = it->second;
+
+    double nvalue = n.get_value(indx);
+    
+    double ssigma = (sqrt(nvalue + value*value)-sqrt(nvalue))/alpha;
+
+    double zvalue = z.get_value(indx);
+    z.set_value(indx,zvalue + value-ssigma * w.get_value(indx));
+
+    n.set_value(indx,nvalue + value*value);
+
+  }
+
+  if(g.size()==0)
+    update = false;
+
+}
 
 void logistic_regression::fit(std::string train_dir,double stop){
   srand(time(0));
   File_Control fc(train_dir);
 
   stop *= (1000*1000);
-  //double stop = 200000;
   long pos = 0;
   long neg = 0;
+  no_train = 0;
+
+  update = true;
   
   //训练第几遍文件
   int indx = 0;
@@ -76,18 +146,24 @@ void logistic_regression::fit(std::string train_dir,double stop){
     while(fc.has_next() && indx <= stop){
       string next = fc.next();
       if(next.size()>3){
-	std::pair<int,Sparse_Vector> result = sparse_vector_form(next);
-	if (result.first==1)
-	  pos ++ ;
-	else if (result.first==0)
-	  neg ++ ;
-	  
-	one_round(result.first,result.second);
 	
+	//subsampling
+	double ran = ran_uniform();
+	std::pair<int,Sparse_Vector> result = sparse_vector_form(next);
+	
+	if(result.first==1 || (ran<1)){
+	  if (result.first==1)
+	    pos ++ ;
+	  else if (result.first==0)
+	    neg ++ ;
+	  
+	  one_round(result.first,result.second);
+	  
+	}
 	indx ++ ;
 	if (indx%(verbose*1000)==0)
-	  std::cout<<"indx "<<indx<<" |w  "<<w.size()<<" |z  "<<z.size() \
-		   <<" |g "<<g.size()<<" |sigma "<<sigma.size()<<" |n "<<n.size() \
+	  std::cout<<"indx "<<std::setw(5)<<(double)indx/(1000*1000)<<"M |w  "<<w.size()<<" |z  "<<z.size() \
+		   <<" |g "<<g.size()<<" |no_train "<<no_train<<" |n "<<n.size() \
 		   <<" |pos "<<pos<<" |neg "<<neg<<std::endl;
 	
       }
@@ -96,6 +172,7 @@ void logistic_regression::fit(std::string train_dir,double stop){
     if(indx>=stop){
       indx = 0;
     }
+    indx = 0;
     
     fc.restart();
   }
@@ -103,58 +180,13 @@ void logistic_regression::fit(std::string train_dir,double stop){
 }
 
 void logistic_regression::one_round(int label,Sparse_Vector& x) {
-  //----------------------更新w---------------------------------
-  sp_iter it;
 
-  z.restart();
-  w.empty();
-  
-  while(z.has_next()) {
-    it = z.next();
-    long indx = it->first;
-    double value = it->second;
-    if(abs(value)<=L1){
-    }
-    else{
-      double a1 = -(value - sgn(value)*L1);
-      double a2 = (beta+sqrt(n.get_value(indx)))/alpha + L2;
-      w.set_value(indx,a1/a2);
-    }
-  }
-  w.clear(BIG,-BIG);
-  
-
+  update_w(x);
   //-----------------------预测p--------------------------------
+  //x.poisson_filter();
   double p = w.dot_sum(x);
-  g = x*(p-label);
-  //g.print_value();
-
-  //-----------------------更新sigma----------------------------
-  sigma.empty();
-  g.restart();
-  while(g.has_next()){
-    it = g.next();
-    long indx = it->first;
-    double value = it->second;
-    double nvalue = n.get_value(indx);
-    sigma.set_value(indx,(sqrt(nvalue+value*value)-sqrt(nvalue))/alpha);
-  }
-
-  //----------------------更新z---------------------------------
-  Sparse_Vector ws(w*sigma);
-  Sparse_Vector gws(g-ws);
-
-  z += gws;
-
   
-  if(rand()%100<=1)
-    z.clear(SMALL,-SMALL);
-
-  //----------------------更新n----------------------------------
-  g = g*g;
-  n += g;
-  if(rand()%100<=1)
-    n.clear(SMALL,-SMALL);
+  update_other(x,p,label);
 
 }
 
