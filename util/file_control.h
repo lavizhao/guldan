@@ -5,8 +5,6 @@
 #include <string>
 #include <fstream>
 
-using std::cout;
-using std::endl;
 
 class File_Control{
  private:
@@ -21,35 +19,25 @@ class File_Control{
       throw ;
   }
   
-  void print_info(){
-    cout<<"文件名"<<fname<<endl;
-  }
+  void print_info();
 
-  void print_file(){
-    int indx = 0;
-    while(!file.eof()){
-      std::string temp;
-      getline(file,temp);
-      cout<<indx<<" "<<temp<<endl;
-      indx ++ ;
-    }
-  }
+  void print_file();
 
-  bool has_next(){
+  inline bool has_next(){
     return !file.eof();
   }
 
-  std::string next(){
+  inline std::string next(){
     getline(file,current);
     return current;
   }
 
-  std::string current_line(){
+  inline std::string current_line(){
     return current;
   }
   
   //返回开头
-  void restart(){
+  inline void restart(){
     file.clear();
     file.seekg(0);
   }

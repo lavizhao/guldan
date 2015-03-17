@@ -13,7 +13,7 @@
 using std::cout;
 using std::endl;
 
-std::vector<std::string> split(const std::string &s,const char delim) {
+static std::vector<std::string> split(const std::string &s,const char delim) {
 
   std::vector<std::string> result;
 
@@ -30,15 +30,15 @@ std::vector<std::string> split(const std::string &s,const char delim) {
   return result;
 }
 
-long stol(const std::string& s){
+static long stol(const std::string& s){
   return atol(s.c_str());
 }
 
-double stod(const std::string& s){
+static double stod(const std::string& s){
   return atof(s.c_str());
 }
 
-std::pair<int,Sparse_Vector> sparse_vector_form(const std::string& s){
+static std::pair<int,Sparse_Vector> sparse_vector_form(const std::string& s){
   std::vector<std::string> sp = split(s,' ');
 
   int label = stol(sp[0]);
